@@ -2,6 +2,7 @@ package net.clinica.servicesImpl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,7 @@ public abstract class ICRUDImpl<T,ID> implements ICRUD<T, ID>{
 	@Override
 	public List<T> listarTodos() throws Exception {
 		// TODO Auto-generated method stub
-		return getJpaRepository().findAll();
+		return getJpaRepository().findAll(Sort.by(Sort.Direction.ASC, "codigo"));
 	}
 
 	

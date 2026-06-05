@@ -54,6 +54,20 @@ public class AlumnoController {
 	public ResponseEntity<Alumno> registrar(@RequestBody Alumno med) throws Exception{
 		if(med.getFoto()=="" || med.getFoto()==null)
 			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
+		
+		if(med.getNombre()==null)
+			med.setNombre("");
+		
+		if(med.getPaterno()==null)
+			med.setPaterno("");
+		
+		if(med.getMaterno()==null)
+			med.setMaterno("");
+		
+		if(med.getSexo()==null)
+			med.setSexo("");
+		
+		
 		Alumno bean=servicioAlu.registrar(med);
 		
 		return new ResponseEntity<>(bean,HttpStatus.CREATED);
@@ -66,9 +80,25 @@ public class AlumnoController {
 		//validar
 		if(bean==null)
 			throw new NotFoundException();
-		else
+		else {
+			if(med.getFoto()=="" || med.getFoto()==null)
+				med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
+			
+			if(med.getNombre()==null)
+				med.setNombre("");
+			
+			if(med.getPaterno()==null)
+				med.setPaterno("");
+			
+			if(med.getMaterno()==null)
+				med.setMaterno("");
+			
+			if(med.getSexo()==null)
+				med.setSexo("");
+			
 			bean=servicioAlu.actualizar(med);
 		
+		}
 		return new ResponseEntity<>(bean,HttpStatus.OK);
 	}
 	

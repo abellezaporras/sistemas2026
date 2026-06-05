@@ -50,6 +50,10 @@ public class MedicamentoController {
 	public ResponseEntity<Medicamento> registrar(@RequestBody Medicamento med) throws Exception{
 		if(med.getFoto()=="" || med.getFoto()==null)
 			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
+		
+		if(med.getNombre()==null)
+			med.setNombre("");
+			
 		Medicamento bean=servicioMed.registrar(med);
 		
 		return new ResponseEntity<>(bean,HttpStatus.CREATED);
@@ -62,8 +66,16 @@ public class MedicamentoController {
 		//validar
 		if(bean==null)
 			throw new NotFoundException();
-		else
+		else {
+			if(med.getFoto()=="" || med.getFoto()==null)
+				med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
+			
+			if(med.getNombre()==null)
+				med.setNombre("");
+			
 			bean=servicioMed.actualizar(med);
+			
+		}
 		
 		return new ResponseEntity<>(bean,HttpStatus.OK);
 	}

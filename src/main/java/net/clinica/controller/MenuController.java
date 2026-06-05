@@ -52,6 +52,15 @@ public class MenuController {
 	public ResponseEntity<Menu> registrar(@RequestBody Menu med) throws Exception{
 		if(med.getFoto()=="" || med.getFoto()==null)
 			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
+		
+		if(med.getNombre()==null)
+			med.setNombre("");
+		
+		if(med.getCategoria()==null)
+			med.setCategoria("");
+		
+		
+	
 		Menu bean=servicioMenu.registrar(med);
 		
 		return new ResponseEntity<>(bean,HttpStatus.CREATED);
@@ -64,8 +73,21 @@ public class MenuController {
 		//validar
 		if(bean==null)
 			throw new NotFoundException();
-		else
+		else {
+			
+			if(med.getFoto()=="" || med.getFoto()==null)
+				med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
+			
+			if(med.getNombre()==null)
+				med.setNombre("");
+			
+			if(med.getCategoria()==null)
+				med.setCategoria("");
+			
 			bean=servicioMenu.actualizar(med);
+			
+			
+		}
 		
 		return new ResponseEntity<>(bean,HttpStatus.OK);
 	}
