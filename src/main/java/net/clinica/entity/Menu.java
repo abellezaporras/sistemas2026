@@ -7,19 +7,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="tb_medicamento")
-public class Medicamento {
+@Table(name="tb_menu")
+public class Menu {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="cod_med")
+	@Column(name="cod_menu")
 	private Integer codigo;
-	@Column(name="nom_med")
+	@Column(name="nom_menu")
 	private String nombre;
-	@Column(name="sto_med")
+	@Column(name="cate_menu")
+	private String categoria;
+	@Column(name="sto_menu")
 	private int stock;
-	@Column(name="pre_med")
+	@Column(name="pre_menu")
 	private double precio;
-	@Column(name="foto_med", length = 400)
+	@Column(name="foto_menu", length = 400)
 	private String foto;
 	
 	public Integer getCodigo() {
@@ -64,6 +66,14 @@ public class Medicamento {
 
 	public void setFoto(String foto) {
 		this.foto = foto;
+	}
+
+	public String getCategoria() {
+		return categoria;
+	}
+
+	public void setCategoria(String categoria) {
+		this.categoria = categoria;
 	}
 	
 	

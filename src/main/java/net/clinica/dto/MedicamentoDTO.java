@@ -2,20 +2,26 @@ package net.clinica.dto;
 
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 
 public class MedicamentoDTO {
 	private Integer codigo;
-	@NotNull(message = "{med.nombre.nulo}")
+	//@NotNull(message = "{med.nombre.nulo}")
 	@NotBlank(message = "{med.nombre.vacio}")
 	private String nombre;
 	@Min(value = 1,message = "{med.stock.min}")
 	@Max(value = 100,message = "{med.stock.max}")
 	private int stock;
+	@Positive(message = "{med.precio.positivo}")
+	@DecimalMin(value = "1.00", message = "{med.precio.min}")
+	@DecimalMax(value = "500.00", message = "{med.precio.max}")
 	private double precio;
 	private String foto;
 	public Integer getCodigo() {
@@ -52,8 +58,10 @@ public class MedicamentoDTO {
 	
 	
 	
-	
 }
+
+
+
 
 
 

@@ -21,7 +21,6 @@ import jakarta.validation.Valid;
 import net.clinica.dto.MedicamentoDTO;
 import net.clinica.entity.Medicamento;
 import net.clinica.servicesImpl.MedicamentoService;
-import net.clinica.servicesImpl.MedicamentoService2;
 import net.clinica.utils.ApiResponse;
 import net.clinica.utils.BusinessException;
 import net.clinica.utils.ModeloNotFoundException;
@@ -70,6 +69,9 @@ public class MedicamentoController {
 		
 		
 		med=mapper.map(bean, Medicamento.class);
+		if(med.getFoto()=="" || med.getFoto()==null)
+			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
+		
 		med=medServices.registrar(med);
 		MedicamentoDTO medDTO=mapper.map(med, MedicamentoDTO.class);
 		ApiResponse<MedicamentoDTO> response=new ApiResponse<>(true,"Medicamento registrado",medDTO);
@@ -86,7 +88,10 @@ public class MedicamentoController {
 			throw new ModeloNotFoundException("Código : "+
 										bean.getCodigo()+" no existe");
 		
-		med=mapper.map(bean, Medicamento.class);		
+		med=mapper.map(bean, Medicamento.class);
+		if(med.getFoto()=="" || med.getFoto()==null)
+			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
+		
 		med=medServices.actualizar(med);
 		MedicamentoDTO medDTO=mapper.map(med, MedicamentoDTO.class);
 		ApiResponse<MedicamentoDTO> response=new ApiResponse<>(true,"Medicamento actualizado",medDTO);

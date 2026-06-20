@@ -1,7 +1,9 @@
 package net.clinica.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,94 +17,111 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import net.clinica.dto.MedicamentoDTO;
+import net.clinica.dto.MenuDTO;
+import net.clinica.entity.Medicamento;
 import net.clinica.entity.Medicamento2;
+import net.clinica.entity.Menu;
 import net.clinica.entity.Menu2;
 import net.clinica.servicesImpl.MedicamentoService2;
 import net.clinica.servicesImpl.MenuService;
+import net.clinica.servicesImpl.MenuService2;
+import net.clinica.utils.ApiResponse;
+import net.clinica.utils.BusinessException;
+import net.clinica.utils.ModeloNotFoundException;
 import net.clinica.utils.NotFoundException;
 
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/menu")
+@RequestMapping("/men")
 public class MenuController {
 	@Autowired
 	private MenuService servicioMenu;
+	@Autowired
+	private ModelMapper mapper;
 	
-	//select *from tb_medicamento --->JSON
+	
 	@GetMapping("/lista")
-	public ResponseEntity<List<Menu2>> lista() throws Exception{
+	public ResponseEntity<ApiResponse<?>> lista() throws Exception{
+		List<MenuDTO> lista=servicioMenu.listarTodos().stream().
+				map(bean-> mapper.map(bean, MenuDTO.class)).
+					collect(Collectors.toList());		
+		ApiResponse<List<MenuDTO>> response=new ApiResponse<>(true,"Listado Correcto",lista);	
 		
-		return new ResponseEntity<>(servicioMenu.listarTodos(),HttpStatus.OK);
+		return new ResponseEntity<>(response,HttpStatus.OK);		
 	}
 	
-	//select *from tb_medicamento where cod_med=1--->JSON
-	@GetMapping("/buscar/{codigo}") //   /buscar/4
-	public ResponseEntity<Menu2> buscar(@PathVariable("codigo") Integer cod) throws Exception{
-		Menu2 med=servicioMenu.buscarPorCodigo(cod);
-		//validar
+	@GetMapping("/buscar/{codigo}")
+	public  ResponseEntity<ApiResponse<?>> buscar(@PathVariable Integer codigo) throws Exception{
+		Menu med=servicioMenu.buscarPorCodigo(codigo);
 		if(med==null)
-			throw new NotFoundException();
+			throw new ModeloNotFoundException("Código : "+codigo+" no encontrado");
 		
-		return new ResponseEntity<>(med,HttpStatus.OK);
+		
+		MenuDTO medDTO=mapper.map(med, MenuDTO.class);
+			
+		ApiResponse<MenuDTO> response=new ApiResponse<>(true,"Menu encontrado",medDTO);
+		
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 	
-	//registrar --- insert into
-	@PostMapping("/registrar")//recibe un JSON
-	public ResponseEntity<Menu2> registrar(@RequestBody Menu2 med) throws Exception{
+	@PostMapping("/registrar")
+	public ResponseEntity<ApiResponse<?>> registrar(@Valid @RequestBody MenuDTO bean) throws Exception{
+		Menu med=null;
+		//validar si el nombre existe
+		//med=medServices.buscarNombre(bean.getNombre());
+		boolean estado=servicioMenu.existsByNombre(bean.getNombre());
+		if(estado==true)
+			throw new BusinessException("Nombre de menu existe");
+		
+		
+		med=mapper.map(bean, Menu.class);
+		
 		if(med.getFoto()=="" || med.getFoto()==null)
 			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
 		
-		if(med.getNombre()==null)
-			med.setNombre("");
+		med=servicioMenu.registrar(med);
+		MenuDTO medDTO=mapper.map(med, MenuDTO.class);
+		ApiResponse<MenuDTO> response=new ApiResponse<>(true,"Menu registrado",medDTO);
 		
-		if(med.getCategoria()==null)
-			med.setCategoria("");
+		return new ResponseEntity<>(response,HttpStatus.CREATED);
+	}
+
+	@PutMapping("/actualizar")
+	public ResponseEntity<ApiResponse<?>> actualizar(@Valid @RequestBody MenuDTO bean) throws Exception{
+		Menu med=null;
+		med=servicioMenu.buscarPorCodigo(bean.getCodigo());
+		//validar si existe el código
+		if(med==null)
+			throw new ModeloNotFoundException("Código : "+
+										bean.getCodigo()+" no existe");
 		
+		med=mapper.map(bean, Menu.class);
 		
-	
-		Menu2 bean=servicioMenu.registrar(med);
+		if(med.getFoto()=="" || med.getFoto()==null)
+			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
 		
-		return new ResponseEntity<>(bean,HttpStatus.CREATED);
+		med=servicioMenu.actualizar(med);
+		MenuDTO medDTO=mapper.map(med, MenuDTO.class);
+		ApiResponse<MenuDTO> response=new ApiResponse<>(true,"Menu actualizado",medDTO);
+		
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 	
-	//actualizar --- update
-	@PutMapping("/actualizar")//recibe un JSON
-	public ResponseEntity<Menu2> actualizar(@RequestBody Menu2 med) throws Exception{
-		Menu2 bean=servicioMenu.buscarPorCodigo(med.getCodigo());
-		//validar
-		if(bean==null)
-			throw new NotFoundException();
-		else {
-			
-			if(med.getFoto()=="" || med.getFoto()==null)
-				med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
-			
-			if(med.getNombre()==null)
-				med.setNombre("");
-			
-			if(med.getCategoria()==null)
-				med.setCategoria("");
-			
-			bean=servicioMenu.actualizar(med);
-			
-			
-		}
+	@DeleteMapping("/eliminar/{codigo}")
+	public  ResponseEntity<ApiResponse<?>> eliminar(@PathVariable("codigo") 
+									Integer cod) throws Exception{
+		Menu med=servicioMenu.buscarPorCodigo(cod);
+		if(med==null)
+			throw new ModeloNotFoundException("Código : "+cod+" no existe");
 		
-		return new ResponseEntity<>(bean,HttpStatus.OK);
-	}
-	
-	//eliminar ---delete
-	@DeleteMapping("/eliminar/{codigo}")	//	/eliminar/2
-	public ResponseEntity<Void> eliminar(@PathVariable("codigo") Integer cod) throws Exception{
-		Menu2 bean=servicioMenu.buscarPorCodigo(cod);
-		//validar
-		if(bean==null)
-			throw new NotFoundException();
-		else
-			servicioMenu.eliminar(cod);
+		servicioMenu.eliminar(cod);
+		ApiResponse<Void>response=new ApiResponse<>(true,
+								"Menu eliminado",null);
 		
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 }
 
