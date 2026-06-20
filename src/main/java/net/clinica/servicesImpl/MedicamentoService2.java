@@ -6,27 +6,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
-import net.clinica.dao.MedicamentoRepository;
 import net.clinica.dao.MedicamentoRepository2;
-import net.clinica.entity.Medicamento;
 import net.clinica.entity.Medicamento2;
 
 
 
 @Service
-public class MedicamentoService extends ICRUDImpl<Medicamento, Integer>{
+public class MedicamentoService2 extends ICRUDImpl<Medicamento2, Integer>{
 	@Autowired
-	private MedicamentoRepository repo;
+	private MedicamentoRepository2 repo;
 
 	@Override
-	public JpaRepository<Medicamento, Integer> getJpaRepository() {
+	public JpaRepository<Medicamento2, Integer> getJpaRepository() {
 		// TODO Auto-generated method stub
 		return repo;
 	}
 
-	public boolean existsByNombre(String nom) {
-		return repo.existsByNombre(nom);
-	}
+
 	
 	
 }

@@ -15,33 +15,29 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.clinica.entity.Alumno;
 import net.clinica.entity.Medicamento2;
-import net.clinica.entity.Menu2;
-import net.clinica.servicesImpl.AlumnoService;
 import net.clinica.servicesImpl.MedicamentoService2;
-import net.clinica.servicesImpl.MenuService;
 import net.clinica.utils.NotFoundException;
 
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/alumno")
-public class AlumnoController {
+@RequestMapping("/medicamento")
+public class MedicamentoController2 {
 	@Autowired
-	private AlumnoService servicioAlu;
+	private MedicamentoService2 servicioMed;
 	
 	//select *from tb_medicamento --->JSON
 	@GetMapping("/lista")
-	public ResponseEntity<List<Alumno>> lista() throws Exception{
+	public ResponseEntity<List<Medicamento2>> lista() throws Exception{
 		
-		return new ResponseEntity<>(servicioAlu.listarTodos(),HttpStatus.OK);
+		return new ResponseEntity<>(servicioMed.listarTodos(),HttpStatus.OK);
 	}
 	
 	//select *from tb_medicamento where cod_med=1--->JSON
 	@GetMapping("/buscar/{codigo}") //   /buscar/4
-	public ResponseEntity<Alumno> buscar(@PathVariable("codigo") Integer cod) throws Exception{
-		Alumno med=servicioAlu.buscarPorCodigo(cod);
+	public ResponseEntity<Medicamento2> buscar(@PathVariable("codigo") Integer cod) throws Exception{
+		Medicamento2 med=servicioMed.buscarPorCodigo(cod);
 		//validar
 		if(med==null)
 			throw new NotFoundException();
@@ -51,32 +47,22 @@ public class AlumnoController {
 	
 	//registrar --- insert into
 	@PostMapping("/registrar")//recibe un JSON
-	public ResponseEntity<Alumno> registrar(@RequestBody Alumno med) throws Exception{
+	public ResponseEntity<Medicamento2> registrar(@RequestBody Medicamento2 med) throws Exception{
 		if(med.getFoto()=="" || med.getFoto()==null)
 			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
 		
 		if(med.getNombre()==null)
 			med.setNombre("");
-		
-		if(med.getPaterno()==null)
-			med.setPaterno("");
-		
-		if(med.getMaterno()==null)
-			med.setMaterno("");
-		
-		if(med.getSexo()==null)
-			med.setSexo("");
-		
-		
-		Alumno bean=servicioAlu.registrar(med);
+			
+		Medicamento2 bean=servicioMed.registrar(med);
 		
 		return new ResponseEntity<>(bean,HttpStatus.CREATED);
 	}
 	
 	//actualizar --- update
 	@PutMapping("/actualizar")//recibe un JSON
-	public ResponseEntity<Alumno> actualizar(@RequestBody Alumno med) throws Exception{
-		Alumno bean=servicioAlu.buscarPorCodigo(med.getCodigo());
+	public ResponseEntity<Medicamento2> actualizar(@RequestBody Medicamento2 med) throws Exception{
+		Medicamento2 bean=servicioMed.buscarPorCodigo(med.getCodigo());
 		//validar
 		if(bean==null)
 			throw new NotFoundException();
@@ -87,30 +73,22 @@ public class AlumnoController {
 			if(med.getNombre()==null)
 				med.setNombre("");
 			
-			if(med.getPaterno()==null)
-				med.setPaterno("");
+			bean=servicioMed.actualizar(med);
 			
-			if(med.getMaterno()==null)
-				med.setMaterno("");
-			
-			if(med.getSexo()==null)
-				med.setSexo("");
-			
-			bean=servicioAlu.actualizar(med);
-		
 		}
+		
 		return new ResponseEntity<>(bean,HttpStatus.OK);
 	}
 	
 	//eliminar ---delete
 	@DeleteMapping("/eliminar/{codigo}")	//	/eliminar/2
 	public ResponseEntity<Void> eliminar(@PathVariable("codigo") Integer cod) throws Exception{
-		Alumno bean=servicioAlu.buscarPorCodigo(cod);
+		Medicamento2 bean=servicioMed.buscarPorCodigo(cod);
 		//validar
 		if(bean==null)
 			throw new NotFoundException();
 		else
-			servicioAlu.eliminar(cod);
+			servicioMed.eliminar(cod);
 		
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}

@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.clinica.entity.Medicamento;
-import net.clinica.entity.Menu;
-import net.clinica.servicesImpl.MedicamentoService;
+import net.clinica.entity.Medicamento2;
+import net.clinica.entity.Menu2;
+import net.clinica.servicesImpl.MedicamentoService2;
 import net.clinica.servicesImpl.MenuService;
 import net.clinica.utils.NotFoundException;
 
@@ -31,15 +31,15 @@ public class MenuController {
 	
 	//select *from tb_medicamento --->JSON
 	@GetMapping("/lista")
-	public ResponseEntity<List<Menu>> lista() throws Exception{
+	public ResponseEntity<List<Menu2>> lista() throws Exception{
 		
 		return new ResponseEntity<>(servicioMenu.listarTodos(),HttpStatus.OK);
 	}
 	
 	//select *from tb_medicamento where cod_med=1--->JSON
 	@GetMapping("/buscar/{codigo}") //   /buscar/4
-	public ResponseEntity<Menu> buscar(@PathVariable("codigo") Integer cod) throws Exception{
-		Menu med=servicioMenu.buscarPorCodigo(cod);
+	public ResponseEntity<Menu2> buscar(@PathVariable("codigo") Integer cod) throws Exception{
+		Menu2 med=servicioMenu.buscarPorCodigo(cod);
 		//validar
 		if(med==null)
 			throw new NotFoundException();
@@ -49,7 +49,7 @@ public class MenuController {
 	
 	//registrar --- insert into
 	@PostMapping("/registrar")//recibe un JSON
-	public ResponseEntity<Menu> registrar(@RequestBody Menu med) throws Exception{
+	public ResponseEntity<Menu2> registrar(@RequestBody Menu2 med) throws Exception{
 		if(med.getFoto()=="" || med.getFoto()==null)
 			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
 		
@@ -61,15 +61,15 @@ public class MenuController {
 		
 		
 	
-		Menu bean=servicioMenu.registrar(med);
+		Menu2 bean=servicioMenu.registrar(med);
 		
 		return new ResponseEntity<>(bean,HttpStatus.CREATED);
 	}
 	
 	//actualizar --- update
 	@PutMapping("/actualizar")//recibe un JSON
-	public ResponseEntity<Menu> actualizar(@RequestBody Menu med) throws Exception{
-		Menu bean=servicioMenu.buscarPorCodigo(med.getCodigo());
+	public ResponseEntity<Menu2> actualizar(@RequestBody Menu2 med) throws Exception{
+		Menu2 bean=servicioMenu.buscarPorCodigo(med.getCodigo());
 		//validar
 		if(bean==null)
 			throw new NotFoundException();
@@ -95,7 +95,7 @@ public class MenuController {
 	//eliminar ---delete
 	@DeleteMapping("/eliminar/{codigo}")	//	/eliminar/2
 	public ResponseEntity<Void> eliminar(@PathVariable("codigo") Integer cod) throws Exception{
-		Menu bean=servicioMenu.buscarPorCodigo(cod);
+		Menu2 bean=servicioMenu.buscarPorCodigo(cod);
 		//validar
 		if(bean==null)
 			throw new NotFoundException();
