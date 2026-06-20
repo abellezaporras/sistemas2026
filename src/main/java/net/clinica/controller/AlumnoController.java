@@ -1,7 +1,9 @@
 package net.clinica.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,105 +17,108 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import net.clinica.dto.AlumnoDTO;
+import net.clinica.dto.MedicamentoDTO;
 import net.clinica.entity.Alumno;
+import net.clinica.entity.Alumno2;
+import net.clinica.entity.Medicamento;
 import net.clinica.entity.Medicamento2;
 import net.clinica.entity.Menu2;
 import net.clinica.servicesImpl.AlumnoService;
+import net.clinica.servicesImpl.AlumnoService2;
 import net.clinica.servicesImpl.MedicamentoService2;
 import net.clinica.servicesImpl.MenuService2;
+import net.clinica.utils.ApiResponse;
+import net.clinica.utils.BusinessException;
+import net.clinica.utils.ModeloNotFoundException;
 import net.clinica.utils.NotFoundException;
 
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/alumno")
+@RequestMapping("/alu")
 public class AlumnoController {
 	@Autowired
-	private AlumnoService servicioAlu;
+	private AlumnoService medServices;
 	
-	//select *from tb_medicamento --->JSON
+	@Autowired
+	private ModelMapper mapper;
+	
 	@GetMapping("/lista")
-	public ResponseEntity<List<Alumno>> lista() throws Exception{
+	public ResponseEntity<ApiResponse<?>> lista() throws Exception{
+		List<AlumnoDTO> lista=medServices.listarTodos().stream().
+				map(bean-> mapper.map(bean, AlumnoDTO.class)).
+					collect(Collectors.toList());		
+		ApiResponse<List<AlumnoDTO>> response=new ApiResponse<>(true,"Listado Correcto",lista);	
 		
-		return new ResponseEntity<>(servicioAlu.listarTodos(),HttpStatus.OK);
+		return new ResponseEntity<>(response,HttpStatus.OK);		
 	}
 	
-	//select *from tb_medicamento where cod_med=1--->JSON
-	@GetMapping("/buscar/{codigo}") //   /buscar/4
-	public ResponseEntity<Alumno> buscar(@PathVariable("codigo") Integer cod) throws Exception{
-		Alumno med=servicioAlu.buscarPorCodigo(cod);
-		//validar
+	@GetMapping("/buscar/{codigo}")
+	public  ResponseEntity<ApiResponse<?>> buscar(@PathVariable Integer codigo) throws Exception{
+		Alumno med=medServices.buscarPorCodigo(codigo);
 		if(med==null)
-			throw new NotFoundException();
+			throw new ModeloNotFoundException("Código : "+codigo+" no encontrado");
 		
-		return new ResponseEntity<>(med,HttpStatus.OK);
+		
+		AlumnoDTO medDTO=mapper.map(med, AlumnoDTO.class);
+			
+		ApiResponse<AlumnoDTO> response=new ApiResponse<>(true,"Alumno encontrado",medDTO);
+		
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 	
-	//registrar --- insert into
-	@PostMapping("/registrar")//recibe un JSON
-	public ResponseEntity<Alumno> registrar(@RequestBody Alumno med) throws Exception{
+	@PostMapping("/registrar")
+	public ResponseEntity<ApiResponse<?>> registrar(@Valid @RequestBody AlumnoDTO bean) throws Exception{
+		Alumno med=null;
+		
+		
+		med=mapper.map(bean, Alumno.class);
 		if(med.getFoto()=="" || med.getFoto()==null)
 			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
 		
-		if(med.getNombre()==null)
-			med.setNombre("");
+		med=medServices.registrar(med);
+		AlumnoDTO medDTO=mapper.map(med, AlumnoDTO.class);
+		ApiResponse<AlumnoDTO> response=new ApiResponse<>(true,"Alumno registrado",medDTO);
 		
-		if(med.getPaterno()==null)
-			med.setPaterno("");
+		return new ResponseEntity<>(response,HttpStatus.CREATED);
+	}
+
+	@PutMapping("/actualizar")
+	public ResponseEntity<ApiResponse<?>> actualizar(@Valid @RequestBody AlumnoDTO bean) throws Exception{
+		Alumno med=null;
+		med=medServices.buscarPorCodigo(bean.getCodigo());
+		//validar si existe el código
+		if(med==null)
+			throw new ModeloNotFoundException("Código : "+
+										bean.getCodigo()+" no existe");
 		
-		if(med.getMaterno()==null)
-			med.setMaterno("");
+		med=mapper.map(bean, Alumno.class);
+		if(med.getFoto()=="" || med.getFoto()==null)
+			med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
 		
-		if(med.getSexo()==null)
-			med.setSexo("");
+		med=medServices.actualizar(med);
+		AlumnoDTO medDTO=mapper.map(med, AlumnoDTO.class);
+		ApiResponse<AlumnoDTO> response=new ApiResponse<>(true,"Alumno actualizado",medDTO);
 		
-		
-		Alumno bean=servicioAlu.registrar(med);
-		
-		return new ResponseEntity<>(bean,HttpStatus.CREATED);
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 	
-	//actualizar --- update
-	@PutMapping("/actualizar")//recibe un JSON
-	public ResponseEntity<Alumno> actualizar(@RequestBody Alumno med) throws Exception{
-		Alumno bean=servicioAlu.buscarPorCodigo(med.getCodigo());
-		//validar
-		if(bean==null)
-			throw new NotFoundException();
-		else {
-			if(med.getFoto()=="" || med.getFoto()==null)
-				med.setFoto("https://res.cloudinary.com/damcanosn/image/upload/v1761414821/notfound_x7zr8p.png");
-			
-			if(med.getNombre()==null)
-				med.setNombre("");
-			
-			if(med.getPaterno()==null)
-				med.setPaterno("");
-			
-			if(med.getMaterno()==null)
-				med.setMaterno("");
-			
-			if(med.getSexo()==null)
-				med.setSexo("");
-			
-			bean=servicioAlu.actualizar(med);
+	@DeleteMapping("/eliminar/{codigo}")
+	public  ResponseEntity<ApiResponse<?>> eliminar(@PathVariable("codigo") 
+									Integer cod) throws Exception{
+		Alumno med=medServices.buscarPorCodigo(cod);
+		if(med==null)
+			throw new ModeloNotFoundException("Código : "+cod+" no existe");
 		
-		}
-		return new ResponseEntity<>(bean,HttpStatus.OK);
+		medServices.eliminar(cod);
+		ApiResponse<Void>response=new ApiResponse<>(true,
+								"Alumno eliminado",null);
+		
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 	
-	//eliminar ---delete
-	@DeleteMapping("/eliminar/{codigo}")	//	/eliminar/2
-	public ResponseEntity<Void> eliminar(@PathVariable("codigo") Integer cod) throws Exception{
-		Alumno bean=servicioAlu.buscarPorCodigo(cod);
-		//validar
-		if(bean==null)
-			throw new NotFoundException();
-		else
-			servicioAlu.eliminar(cod);
-		
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-	}
 }
 
 
