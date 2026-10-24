@@ -37,7 +37,7 @@ public class MenuController2 {
 	}
 	
 	//select *from tb_medicamento where cod_med=1--->JSON
-	@GetMapping("/buscar/{codigo}") //   /buscar/4
+	@GetMapping("/buscar/{codigo}") //   /buscar/42222
 	public ResponseEntity<Menu2> buscar(@PathVariable("codigo") Integer cod) throws Exception{
 		Menu2 med=servicioMenu.buscarPorCodigo(cod);
 		//validar
